@@ -3,48 +3,51 @@ from moviepy import VideoFileClip, AudioFileClip
 import subprocess
 import time
 url = "https://www.youtube.com/watch?v=ayCtULr5wG0" # Youtube Video URL
-try:
-
-    # Progress of Video Downloading State
-    def on_progress(stream,chunk, bytes_remaining):
-        total_size = stream.filesize
-        downloaded = total_size - bytes_remaining
-        progress= (downloaded/ total_size) * 100 
-
-        print(f"\rDownloading: {progress:.2f}%", end="")
-    # Action When video downloaded
-    def on_complete(stream,file_path):
-        
-        print("Download Completed")
-        print(f"file saved {file_path}")
-
-    # Function For Youtube
-    youTube = YouTube(url
-                    ,use_oauth=False,
-                    on_progress_callback=on_progress,
-                    on_complete_callback=on_complete
-                    )
-
-    #  Video And Audio from single file
-    highest_video = youTube.streams.get_highest_resolution(progressive=False)
-    highest_audio = youTube.streams.get_audio_only()
-    print(highest_video.filesize/pow(1024,2))
-
-
-    # Download Call
-    highest_video.download()
-    highest_audio.download()
-
-    # Merge Downloaded Audio And Video
+if "youtube.com" in url or "www" in url or "https://" in url:
     try:
-        video = VideoFileClip(highest_audio.title+".mp4")
-        audio = AudioFileClip(highest_audio.title+".m4a")
 
-        final_video = video.with_audio(audio)
-        final_video.write_videofile(f"{highest_video.title}.mp4")
+        # Progress of Video Downloading State
+        def on_progress(stream,chunk, bytes_remaining):
+            total_size = stream.filesize
+            downloaded = total_size - bytes_remaining
+            progress= (downloaded/ total_size) * 100 
+
+            print(f"\rDownloading: {progress:.2f}%", end="")
+        # Action When video downloaded
+        def on_complete(stream,file_path):
+            
+            print(" \n Download Completed")
+            print(f"file saved {file_path}")
+
+        # Function For Youtube
+        youTube = YouTube(url
+                        ,use_oauth=False,
+                        on_progress_callback=on_progress,
+                        on_complete_callback=on_complete
+                        )
+
+        #  Video And Audio from single file
+        highest_video = youTube.streams.get_highest_resolution(progressive=False)
+        highest_audio = youTube.streams.get_audio_only()
+        print(highest_video.filesize/pow(1024,2))
+
+        # Download Call
+        highest_video.download()
+        highest_audio.download()
+
+        # Merge Downloaded Audio And Video
+        try:
+            video = VideoFileClip(highest_audio.title+".mp4")
+            audio = AudioFileClip(highest_audio.title+".m4a")
+
+            final_video = video.with_audio(audio)
+            final_video.write_videofile(f"{highest_video.title}.mp4")
+        except:
+            print("Merging Failed")
+        time.sleep(3)
+        subprocess.run("rm '"+highest_audio.title+".m4a'")
+        print("Download And Merging Completed".center(30,"_"))
     except:
-        print("Merging Failed")
-    time.sleep(3)
-    subprocess.run("rm '"+highest_audio.title+".m4a'")
-except:
-    print("Downloading Failed")
+        print("Downloading Failed")
+else:
+    print('not a valid url')
